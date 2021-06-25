@@ -8,6 +8,7 @@
 import Foundation
 
 final class AuthManager {
+    // 싱글톤
     static let shared = AuthManager()
     
     struct Constants {
@@ -22,6 +23,7 @@ final class AuthManager {
         
     }
     
+    // authorization, 로그인 url
     public var signInURL : URL? {
         let endPoint = "https://accounts.spotify.com/authorize"
         var components = URLComponents(string: endPoint)
@@ -34,10 +36,10 @@ final class AuthManager {
         ]
 
         let string = components?.url
-
         return string
     }
     
+    // 엑세스 토큰이 존재하는 지 체크
     var isSingedIn:Bool {
         return accessToken != nil
     }
@@ -54,6 +56,7 @@ final class AuthManager {
         return UserDefaults.standard.object(forKey: "expirationDate") as? Date
     }
     
+    // 유효시간이 5분 남았다면 갱신하기 위해 true값 리턴
     private var shouldRefreshToken: Bool {
         guard let expirationDate = tokenExpirationDate else {
             return false
@@ -63,9 +66,12 @@ final class AuthManager {
         return currentDate.addingTimeInterval(fiveMinute) >= expirationDate
     }
     
+    // 받은 code로 access token 발급
     public func exchangeCodeForToken(code: String, completion: @escaping ((Bool) -> Void)){
+        // 토큰 발급하는 url
         guard let url = URL(string: Constants.tokenApiUrl) else {return}
         
+        // request url의 prameters
         var components = URLComponents()
         components.queryItems = [
             URLQueryItem(name: "grant_type", value: "authorization_code"),
@@ -73,6 +79,7 @@ final class AuthManager {
             URLQueryItem(name: "redirect_uri", value: Constants.redirectUrl)
         ]
         
+        // post방식으로 request url 보낼때 header랑 body 작성
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
@@ -88,6 +95,8 @@ final class AuthManager {
         
         request.setValue("Basic \(base64String)", forHTTPHeaderField: "Authorization")
         
+        
+        // request후 access, refresh, date 유저 디폴트로 저장
         let task = URLSession.shared.dataTask(with: request){[weak self] data, _, error in
             guard let data = data, error == nil else {
                 completion(false)
@@ -106,24 +115,29 @@ final class AuthManager {
         
     }
     
+    // 토큰 유효시간 지났을 때 갱신
     public func refreshForToken(completion: @escaping (Bool) -> Void){
+        // 토큰을 갱신할 때가 되었으면
         guard shouldRefreshToken else {
             completion(false)
             return
         }
+        // refresh token
         guard let refreshToken = self.refreshToken else {
             return
         }
         
-        // refresh Token
+        // token url
         guard let url = URL(string: Constants.tokenApiUrl) else {return}
         
+        // 갱신이라는 의미의 파라미터로 작성
         var components = URLComponents()
         components.queryItems = [
             URLQueryItem(name: "grant_type", value: "refresh_token"),
             URLQueryItem(name: "refresh_token", value: refreshToken),
         ]
         
+        // request
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
@@ -159,6 +173,7 @@ final class AuthManager {
         
     }
     
+    // 받은 토큰들과 유효시간를 캐싱한다.
     public func cacheToken(result: AuthResponse){
         UserDefaults.standard.setValue(result.access_token,
                                        forKey: "access_token")
