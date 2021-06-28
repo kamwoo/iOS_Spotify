@@ -39,6 +39,8 @@ final class AuthManager {
         return string
     }
     
+    private var refreshingToken = false
+    
     // 엑세스 토큰이 존재하는 지 체크
     var isSingedIn:Bool {
         return accessToken != nil
@@ -104,6 +106,8 @@ final class AuthManager {
             }
             do {
                 let result = try JSONDecoder().decode(AuthResponse.self, from: data)
+                self?.onRefeshBlock.forEach{ $0(result.access_token)}
+                self?.onRefeshBlock.removeAll()
                 self?.cacheToken(result: result)
                 completion(true)
             }catch{
@@ -117,6 +121,9 @@ final class AuthManager {
     
     // 토큰 유효시간 지났을 때 갱신
     public func refreshForToken(completion: @escaping (Bool) -> Void){
+        guard !refreshingToken else {
+            return
+        }
         // 토큰을 갱신할 때가 되었으면
         guard shouldRefreshToken else {
             completion(false)
@@ -129,6 +136,8 @@ final class AuthManager {
         
         // token url
         guard let url = URL(string: Constants.tokenApiUrl) else {return}
+        
+        refreshingToken = true
         
         // 갱신이라는 의미의 파라미터로 작성
         var components = URLComponents()
@@ -154,6 +163,7 @@ final class AuthManager {
         request.setValue("Basic \(base64String)", forHTTPHeaderField: "Authorization")
         
         let task = URLSession.shared.dataTask(with: request){[weak self] data, _, error in
+            self?.refreshingToken = false
             guard let data = data, error == nil else {
                 completion(false)
                 return
@@ -171,6 +181,25 @@ final class AuthManager {
         task.resume()
         
         
+    }
+    
+    private var onRefeshBlock = [((String) -> Void)]()
+    
+    // access token을 전달, 리프레시해야되면 하고
+    public func withValidToken(completion : @escaping (String) -> Void) {
+        guard !refreshingToken else {
+            onRefeshBlock.append(completion)
+            return
+        }
+        if shouldRefreshToken {
+            refreshForToken{ [weak self] result in
+                if result, let token = self?.accessToken {
+                        completion(token)
+                    }
+            }
+        }else if let token = accessToken{
+            completion(token)
+        }
     }
     
     // 받은 토큰들과 유효시간를 캐싱한다.
