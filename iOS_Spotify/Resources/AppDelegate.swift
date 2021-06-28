@@ -17,6 +17,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // 로그인 캐시되어있으면 홈화면으로
         let window = UIWindow(frame: UIScreen.main.bounds)
         if AuthManager.shared.isSingedIn {
+            AuthManager.shared.refreshForToken(completion: nil)
             window.rootViewController = TabBarViewController()
         }
         // 아니라면 로그인 화면으로

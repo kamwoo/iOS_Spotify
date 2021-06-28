@@ -120,13 +120,13 @@ final class AuthManager {
     }
     
     // 토큰 유효시간 지났을 때 갱신
-    public func refreshForToken(completion: @escaping (Bool) -> Void){
+    public func refreshForToken(completion: ((Bool) -> Void)?){
         guard !refreshingToken else {
             return
         }
         // 토큰을 갱신할 때가 되었으면
         guard shouldRefreshToken else {
-            completion(false)
+            completion?(false)
             return
         }
         // refresh token
@@ -156,7 +156,7 @@ final class AuthManager {
         let data = basicToken.data(using: .utf8)
         guard let base64String = data?.base64EncodedString() else {
             print("Failed to get base64")
-            completion(false)
+            completion?(false)
             return
         }
         
@@ -165,17 +165,17 @@ final class AuthManager {
         let task = URLSession.shared.dataTask(with: request){[weak self] data, _, error in
             self?.refreshingToken = false
             guard let data = data, error == nil else {
-                completion(false)
+                completion?(false)
                 return
             }
             do {
                 let result = try JSONDecoder().decode(AuthResponse.self, from: data)
                 self?.cacheToken(result: result)
                 print("successfully refresh token")
-                completion(true)
+                completion?(true)
             }catch{
                 print(error.localizedDescription)
-                completion(false)
+                completion?(false)
             }
         }
         task.resume()
