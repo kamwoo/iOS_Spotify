@@ -164,7 +164,6 @@ final class APICaller{
                 }
                 do{
                     let result = try JSONDecoder().decode(AlbumDetails.self, from: data)
-                    print(result)
                     completion(.success(result))
                     
                 }catch{
@@ -186,7 +185,6 @@ final class APICaller{
                 }
                 do{
                     let result = try JSONDecoder().decode(PlaylistDetails.self, from: data)
-                    print(result)
                     completion(.success(result))
                     
                 }catch{

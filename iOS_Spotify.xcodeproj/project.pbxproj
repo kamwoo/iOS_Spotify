@@ -46,6 +46,8 @@
 		F6FC63C626859D6F00DCCDCC /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6FC63C526859D6F00DCCDCC /* Extensions.swift */; };
 		F6FC63C82685BD2600DCCDCC /* AuthResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6FC63C72685BD2600DCCDCC /* AuthResponse.swift */; };
 		F6FC63CA26895CB800DCCDCC /* SettingModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6FC63C926895CB800DCCDCC /* SettingModels.swift */; };
+		F6FF8C9A268E003A002199DA /* PlaylistHeaderCollectionReusableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6FF8C99268E003A002199DA /* PlaylistHeaderCollectionReusableView.swift */; };
+		F6FF8C9C268E0C00002199DA /* PlaylistHeaderViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6FF8C9B268E0C00002199DA /* PlaylistHeaderViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -92,6 +94,8 @@
 		F6FC63C526859D6F00DCCDCC /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		F6FC63C72685BD2600DCCDCC /* AuthResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthResponse.swift; sourceTree = "<group>"; };
 		F6FC63C926895CB800DCCDCC /* SettingModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingModels.swift; sourceTree = "<group>"; };
+		F6FF8C99268E003A002199DA /* PlaylistHeaderCollectionReusableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistHeaderCollectionReusableView.swift; sourceTree = "<group>"; };
+		F6FF8C9B268E0C00002199DA /* PlaylistHeaderViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistHeaderViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -201,6 +205,7 @@
 				F62E5091268C7CBD006086A0 /* NewReleasesCellViewModel.swift */,
 				F62E5093268CAC93006086A0 /* FeaturedPlaylistCellViewModel.swift */,
 				F62E5095268CACB3006086A0 /* RecommendedTrackCellViewModel.swift */,
+				F6FF8C9B268E0C00002199DA /* PlaylistHeaderViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -229,6 +234,7 @@
 			children = (
 				F62E508A2689DC92006086A0 /* Browse */,
 				F6FC639226858AF300DCCDCC /* LaunchScreen.storyboard */,
+				F6FF8C99268E003A002199DA /* PlaylistHeaderCollectionReusableView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -379,10 +385,12 @@
 				F6FC63AE26858FB100DCCDCC /* ProfileViewController.swift in Sources */,
 				F62E50852689A749006086A0 /* ApiImage.swift in Sources */,
 				F62E5098268DDA25006086A0 /* AlbumViewController.swift in Sources */,
+				F6FF8C9C268E0C00002199DA /* PlaylistHeaderViewModel.swift in Sources */,
 				F6FC63A226858EF600DCCDCC /* TabBarViewController.swift in Sources */,
 				F62E509A268DDB4A006086A0 /* PlaylistViewController.swift in Sources */,
 				F6FC638C26858AF200DCCDCC /* HomeViewController.swift in Sources */,
 				F62E5094268CAC93006086A0 /* FeaturedPlaylistCellViewModel.swift in Sources */,
+				F6FF8C9A268E003A002199DA /* PlaylistHeaderCollectionReusableView.swift in Sources */,
 				F6FC63C42685913A00DCCDCC /* AudioTrack.swift in Sources */,
 				F62E5092268C7CBD006086A0 /* NewReleasesCellViewModel.swift in Sources */,
 				F6FC63BC268590CA00DCCDCC /* HapticsManager.swift in Sources */,
