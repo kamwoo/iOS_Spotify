@@ -37,6 +37,8 @@ final class APICaller{
         }
     }
     
+// MARK: -Profile
+    
     // 현재 유저 정보 api
     public func getCurrentUserProfile(completion: @escaping (Result<UserProfile, Error>) -> Void){
         // 생선된 request문으로 쿼리
@@ -60,6 +62,8 @@ final class APICaller{
             task.resume()
         }
     }
+    
+// MARK: -Browse
     
     // 최신곡 api
     public func getNewRelease(completion: @escaping ((Result<NewReleasesResponse, Error>)) -> Void){
@@ -148,7 +152,50 @@ final class APICaller{
             task.resume()
         }
     }
+
+//MARK: -Albums
     
-    
+    public func getAlbumDetails(for album: Album, completion: @escaping (Result<AlbumDetails, Error>) -> Void){
+        createRequest(with: URL(string: Constants.baseAPIURL + "/albums/" + album.id), type: .GET){ request in
+            let task = URLSession.shared.dataTask(with: request){ data, _ ,error in
+                guard let data = data, error == nil else {
+                    completion(.failure(APIError.filedToGetData))
+                    return
+                }
+                do{
+                    let result = try JSONDecoder().decode(AlbumDetails.self, from: data)
+                    print(result)
+                    completion(.success(result))
+                    
+                }catch{
+                    print(error)
+                    completion(.failure(APIError.filedToGetData))
+                }
+            }
+            task.resume()
+        }
+    }
+//MARK: -Playlists
+
+    public func getPlaylistDetails(for playlist: playlist, completion: @escaping (Result<PlaylistDetails, Error>) -> Void){
+        createRequest(with: URL(string: Constants.baseAPIURL + "/playlists/" + playlist.id), type: .GET){ request in
+            let task = URLSession.shared.dataTask(with: request){ data, _ ,error in
+                guard let data = data, error == nil else {
+                    completion(.failure(APIError.filedToGetData))
+                    return
+                }
+                do{
+                    let result = try JSONDecoder().decode(PlaylistDetails.self, from: data)
+                    print(result)
+                    completion(.success(result))
+                    
+                }catch{
+                    print(error)
+                    completion(.failure(APIError.filedToGetData))
+                }
+            }
+            task.resume()
+        }
+    }
     
 }

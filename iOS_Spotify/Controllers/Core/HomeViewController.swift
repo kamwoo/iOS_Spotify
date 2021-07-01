@@ -8,12 +8,16 @@
 import UIKit
 
 enum BrowseSectionType {
-    case newReleases
-    case featuredPlaylists
-    case recommendedTracks
+    case newReleases(viewModels: [NewReleasesCellViewModel])
+    case featuredPlaylists(viewModels: [FeaturedPlaylistCellViewModel])
+    case recommendedTracks(viewModels: [RecommendedTrackCellViewModel])
 }
 
 class HomeViewController: UIViewController {
+    
+    private var newAlbums: [Album] = []
+    private var playlists: [playlist] = []
+    private var tracks: [AudioTrack] = []
     
     private var collectionView : UICollectionView = UICollectionView(
         frame: .zero,
@@ -28,6 +32,8 @@ class HomeViewController: UIViewController {
         spinner.hidesWhenStopped = true
         return spinner
     }()
+    
+    private var sections = [BrowseSectionType]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -52,6 +58,12 @@ class HomeViewController: UIViewController {
     private func configureCollectionView(){
         view.addSubview(collectionView)
         collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "cell")
+        collectionView.register(NewReleaseCollectionViewCell.self,
+                                forCellWithReuseIdentifier: NewReleaseCollectionViewCell.identifier)
+        collectionView.register(FeaturedPlaylistCollectionViewCell.self,
+                                forCellWithReuseIdentifier: FeaturedPlaylistCollectionViewCell.identifier)
+        collectionView.register(RecommendedTrackCollectionViewCell.self,
+                                forCellWithReuseIdentifier: RecommendedTrackCollectionViewCell.identifier)
         collectionView.delegate = self
         collectionView.dataSource = self
     }
@@ -152,49 +164,107 @@ class HomeViewController: UIViewController {
     
     // api호출
     private func fetchData(){
-//        APICaller.shared.getNewRelease{ result in
-//            switch result{
-//            case .success(let model):
-////                print(model)
-//                break
-//            case .failure(let error):
-////                print(error)
-//                break
-//            }
-//        }
-//
-//        APICaller.shared.getFeaturePlaylist{ result in
-//            switch result{
-//            case .success(let model):
-//                break
-//            case .failure(let error):
-//                break
-//            }
-//        }
+        let group = DispatchGroup()
+        group.enter()
+        group.enter()
+        group.enter()
         
-//        APICaller.shared.getRecommendedGenres{ result in
-//            switch result{
-//            case .success(let model):
-//                let genrs = model.genres
-//                var seeds = Set<String>()
-//                while seeds.count < 5 {
-//                    if let random = genrs.randomElement(){
-//                        seeds.insert(random)
-//                    }
-//                }
-//                APICaller.shared.getRecommendations(genres: seeds){ result in
-//                    switch result {
-//                    case .success(let model):
-//                        print(model)
-//                    case .failure(let error):
-//                        print(error)
-//                    }
-//                }
-//
-//            case .failure(let error):
-//                print(error)
-//            }
-//        }
+        var newReleases: NewReleasesResponse?
+        var featurePlaylists: FeaturedPlaylistsResponse?
+        var recommendations: RecommendationsResponse?
+        
+        APICaller.shared.getNewRelease{ result in
+            defer {
+                group.leave()
+            }
+            switch result{
+            case .success(let model):
+                newReleases = model
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
+
+        APICaller.shared.getFeaturePlaylist{ result in
+            defer {
+                group.leave()
+            }
+            switch result{
+            case .success(let model):
+                featurePlaylists = model
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
+        
+        APICaller.shared.getRecommendedGenres{ result in
+            switch result{
+            case .success(let model):
+                let genrs = model.genres
+                var seeds = Set<String>()
+                while seeds.count < 5 {
+                    if let random = genrs.randomElement(){
+                        seeds.insert(random)
+                    }
+                }
+                APICaller.shared.getRecommendations(genres: seeds){ recommendedResult in
+                    defer {
+                        group.leave()
+                    }
+                    switch recommendedResult {
+                    case .success(let model):
+                        recommendations = model
+                    case .failure(let error):
+                        print(error.localizedDescription)
+                    }
+                }
+
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
+        
+        group.notify(queue: .main){
+            guard let newAlbums = newReleases?.albums.items,
+                  let playlist = featurePlaylists?.playlists.items,
+                  let tracks = recommendations?.tracks else {
+                return
+            }
+            self.configureModels(newAlbums: newAlbums, playlists: playlist, tracks: tracks)
+        }
+        
+    }
+    
+    
+    private func configureModels(newAlbums: [Album], playlists: [playlist], tracks: [AudioTrack]){
+        self.newAlbums = newAlbums
+        self.playlists = playlists
+        self.tracks = tracks
+        
+        // configure Model
+        sections.append(.newReleases(viewModels: newAlbums.compactMap({
+                return NewReleasesCellViewModel(
+                    name: $0.name,
+                    artworkURL: URL(string: $0.images.first?.url ?? ""),
+                    numberOfTracks: $0.total_tracks,
+                    artistName: $0.artists.first?.name ?? "")
+            })
+        ))
+        sections.append(.featuredPlaylists(viewModels: playlists.compactMap({
+            return FeaturedPlaylistCellViewModel(
+                name: $0.name,
+                artworkURL: URL(string: $0.images.first?.url ?? ""),
+                creatorName: $0.owner.display_name)
+            })
+        ))
+        sections.append(.recommendedTracks(viewModels: tracks.compactMap({
+            return RecommendedTrackCellViewModel(
+                name: $0.name,
+                artistName: $0.artists.first?.name ?? "",
+                artworkURL: URL(string: $0.album.images.first?.url ?? ""))
+            })
+        ))
+        collectionView.reloadData()
     }
     
     // 세팅 뷰로 전환
@@ -211,26 +281,75 @@ class HomeViewController: UIViewController {
 // 홈 뷰 테이블
 extension HomeViewController : UICollectionViewDelegate, UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 5
+        let type = sections[section]
+        switch type{
+        case .newReleases(let viewModels):
+            return viewModels.count
+        case .featuredPlaylists(let viewModels):
+            return viewModels.count
+        case .recommendedTracks(let viewModels):
+            return viewModels.count
+        }
     }
     
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return 3
+        return sections.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
-        if indexPath.section == 0 {
-            cell.backgroundColor = .systemBlue
+        
+        let type = sections[indexPath.section]
+        
+        switch type{
+        case .newReleases(let viewModels):
+            guard let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: NewReleaseCollectionViewCell.identifier,
+                    for: indexPath) as? NewReleaseCollectionViewCell else {
+                return UICollectionViewCell()
+            }
+            let viewModel = viewModels[indexPath.row]
+            cell.configure(with: viewModel)
+            return cell
+            
+        case .featuredPlaylists(let viewModels):
+            guard let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: FeaturedPlaylistCollectionViewCell.identifier,
+                    for: indexPath) as? FeaturedPlaylistCollectionViewCell else {
+                return UICollectionViewCell()
+            }
+            
+            cell.configure(with: viewModels[indexPath.row])
+            return cell
+            
+        case .recommendedTracks(let viewModels):
+            guard let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: RecommendedTrackCollectionViewCell.identifier,
+                    for: indexPath) as? RecommendedTrackCollectionViewCell else {
+                return UICollectionViewCell()
+            }
+            cell.configure(with: viewModels[indexPath.row])
+            return cell
         }
-        else if indexPath.section == 1{
-            cell.backgroundColor = .systemRed
-        }
-        else if indexPath.section == 2{
-            cell.backgroundColor = .systemPink
-        }
-        return cell
     }
     
-    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        collectionView.deselectItem(at: indexPath, animated: true)
+        let section = sections[indexPath.section]
+        switch section {
+        case .featuredPlaylists:
+            let playlist = playlists[indexPath.row]
+            let vc = PlaylistViewController(playlist: playlist)
+            vc.title = playlist.name
+            vc.navigationItem.largeTitleDisplayMode = .never
+            navigationController?.pushViewController(vc, animated: true)
+        case .newReleases:
+            let album = newAlbums[indexPath.row]
+            let vc = AlbumViewController(album: album)
+            vc.title = album.name
+            vc.navigationItem.largeTitleDisplayMode = .never
+            navigationController?.pushViewController(vc, animated: true)
+        case .recommendedTracks:
+            break
+        }
+    }
 }
