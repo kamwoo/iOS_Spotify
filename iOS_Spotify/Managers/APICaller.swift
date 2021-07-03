@@ -196,4 +196,41 @@ final class APICaller{
         }
     }
     
+// MARK: -All Category
+    public func getCategories(completion: @escaping (Result<[category], Error>) -> Void){
+        createRequest(with: URL(string: Constants.baseAPIURL + "/browse/categories?country=KR&limit=50"), type: .GET){ request in
+            let task = URLSession.shared.dataTask(with: request){ data, _, error in
+                guard let data = data, error == nil else {
+                    return completion(.failure(APIError.filedToGetData))
+                }
+                
+                do{
+                    let result = try JSONDecoder().decode(AllCategoriesResponse.self, from: data)
+                    completion(.success(result.categories.items))
+                }catch{
+                    completion(.failure(APIError.filedToGetData))
+                }
+            }
+            task.resume()
+        }
+    }
+    
+// MARK: -Category
+    public func getCategoryPlaylists(for category: category, completion: @escaping (Result<[playlist], Error>) -> Void){
+        createRequest(with: URL(string: Constants.baseAPIURL + "/browse/categories/\(category.id)/playlists"), type: .GET){ request in
+            let task = URLSession.shared.dataTask(with: request){ data, _, error in
+                guard let data = data, error == nil else {
+                    return completion(.failure(APIError.filedToGetData))
+                }
+                do{
+                    let json = try JSONDecoder().decode(FeaturedPlaylistsResponse.self, from: data)
+                    completion(.success(json.playlists.items))
+                }catch{
+                    completion(.failure(APIError.filedToGetData))
+                }
+            }
+            task.resume()
+        }
+    }
+    
 }

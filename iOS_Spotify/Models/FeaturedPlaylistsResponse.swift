@@ -7,8 +7,13 @@
 
 import Foundation
 
+
 struct FeaturedPlaylistsResponse: Codable {
     let playlists: playlistResponse
+}
+
+struct CategoryPlaylistResponse: Codable {
+    let playlist: playlistResponse
 }
 
 struct playlistResponse: Codable {
