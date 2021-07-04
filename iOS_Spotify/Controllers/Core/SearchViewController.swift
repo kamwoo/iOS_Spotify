@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SafariServices
 
 class SearchViewController: UIViewController {
     
@@ -43,6 +44,7 @@ class SearchViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         
+        searchController.searchBar.delegate = self
         searchController.searchResultsUpdater = self
         navigationItem.searchController = searchController
         view.addSubview(collectionView)
@@ -108,8 +110,12 @@ extension SearchViewController: UICollectionViewDelegate, UICollectionViewDataSo
 }
 
 // 검색 결과 보여지는 뷰
-extension SearchViewController: UISearchResultsUpdating {
+extension SearchViewController: UISearchResultsUpdating, UISearchBarDelegate {
     func updateSearchResults(for searchController: UISearchController) {
+        
+    }
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         guard let resultController = searchController.searchResultsController as? SearchResultViewController,
               let query = searchController.searchBar.text,
               !query.trimmingCharacters(in: .whitespaces).isEmpty
@@ -117,10 +123,48 @@ extension SearchViewController: UISearchResultsUpdating {
             return
         }
         
-        print(query)
+        resultController.delegate = self
         
+        APICaller.shared.search(with: query){ result in
+            DispatchQueue.main.async {
+                switch result{
+                case .success(let model):
+                    resultController.update(with: model)
+                case .failure(let error):
+                    break
+                }
+            }
+           
+        }
     }
     
     
 }
 
+extension SearchViewController: SearchResultViewControllerDelegate{
+    func didTapResult(_ result: SearchResultModel) {
+        switch result {
+        case .artist(let model):
+            guard let url = URL(string:model.external_urls["spotify"] ?? "") else {
+                return
+            }
+            let vc = SFSafariViewController(url: url)
+            present(vc, animated: true, completion: nil)
+            
+        case .album(let model):
+            let vc = AlbumViewController(album: model)
+            vc.navigationItem.largeTitleDisplayMode = .never
+            navigationController?.pushViewController(vc, animated: true)
+            
+        case .track(let model):
+            PlaybackPresenter.startPlayback(from: self, track: model)
+            
+        case .playlist(let model):
+            let vc = PlaylistViewController(playlist: model)
+            vc.navigationItem.largeTitleDisplayMode = .never
+            navigationController?.pushViewController(vc, animated: true)
+        }
+    }
+    
+    
+}
