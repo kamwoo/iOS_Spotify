@@ -7,9 +7,11 @@
 
 import UIKit
 
+// 카테고리 셀 선택후 보여질 플레이리스트 CategoryView에 각 셀
 class FeaturedPlaylistCollectionViewCell: UICollectionViewCell {
     static let identifier = "FeaturedPlaylistCollectionViewCell"
     
+    // 플레이리스트 타이틀 이미지
     private let playlistCoverImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.layer.masksToBounds = true
@@ -19,6 +21,7 @@ class FeaturedPlaylistCollectionViewCell: UICollectionViewCell {
         return imageView
     }()
     
+    // 플레이 리스트 이름
     private let playlistNameLabel: UILabel = {
         let label = UILabel()
         label.numberOfLines = 0
@@ -27,6 +30,7 @@ class FeaturedPlaylistCollectionViewCell: UICollectionViewCell {
         return label
     }()
 
+    // 만든 사람 이름
     private let creatorNameLabel: UILabel = {
         let label = UILabel()
         label.numberOfLines = 0
@@ -70,6 +74,7 @@ class FeaturedPlaylistCollectionViewCell: UICollectionViewCell {
         
     }
     
+    // 재사용될 셀 기본설정
     override func prepareForReuse() {
         super.prepareForReuse()
         playlistNameLabel.text = nil
@@ -77,6 +82,7 @@ class FeaturedPlaylistCollectionViewCell: UICollectionViewCell {
         playlistCoverImageView.image = nil
     }
     
+    // 해당하는 카테고리 플레이리스트를 저장
     func configure(with viewModel: FeaturedPlaylistCellViewModel){
         playlistNameLabel.text = viewModel.name
         creatorNameLabel.text = viewModel.creatorName

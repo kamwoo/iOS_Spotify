@@ -9,15 +9,18 @@ import UIKit
 import SDWebImage
 
 
+// album, playlist, track 섹션에서 보여질 셀 뷰
 class SearchResultSubtitleTableViewCell: UITableViewCell {
     static let identifier = "SearchResultSubtitleTableViewCell"
     
+    // 앨범, 노래 이름
     private let label : UILabel = {
        let label = UILabel()
         label.numberOfLines = 1
         return label
     }()
     
+    // 아티스트 이름, 제작자 등 설명
     private let sublabel : UILabel = {
        let label = UILabel()
         label.numberOfLines = 1
@@ -25,6 +28,7 @@ class SearchResultSubtitleTableViewCell: UITableViewCell {
         return label
     }()
     
+    // 타이틀 이미지
     private let iconImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
@@ -61,6 +65,7 @@ class SearchResultSubtitleTableViewCell: UITableViewCell {
                              height: labelHeight)
     }
     
+    // 재사용할 셀 기본 설정
     override func prepareForReuse() {
         super.prepareForReuse()
         iconImageView.image = nil
@@ -68,6 +73,7 @@ class SearchResultSubtitleTableViewCell: UITableViewCell {
         sublabel.text = nil
     }
     
+    // 검색결과 뷰에서 해당하는 데이터 모델 받음
     func configure(with viewModel: SearchResultSubtitleTableViewCellViewModel){
         label.text = viewModel.title
         sublabel.text = viewModel.subtitle

@@ -16,28 +16,7 @@ final class PlaylistHeaderCollectionReusableView: UICollectionReusableView {
     
     weak var delegate: PlaylistHeaderCollectionReusableViewDelegate?
     
-    private let nameLabel : UILabel = {
-        let label = UILabel()
-        label.textAlignment = .center
-        label.font = .systemFont(ofSize: 22, weight: .semibold)
-        return label
-    }()
-    
-    private let descriptionLabel : UILabel = {
-        let label = UILabel()
-        label.textColor = .secondaryLabel
-        label.numberOfLines = 0
-        label.font = .systemFont(ofSize: 18, weight: .regular)
-        return label
-    }()
-    
-    private let ownerLabel : UILabel = {
-        let label = UILabel()
-        label.textColor = .secondaryLabel
-        label.font = .systemFont(ofSize: 18, weight: .light)
-        return label
-    }()
-    
+    // 앨범 타이틀 이미지
     private let imageView: UIImageView = {
        let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
@@ -47,6 +26,32 @@ final class PlaylistHeaderCollectionReusableView: UICollectionReusableView {
         return imageView
     }()
     
+    // 앨범 이름
+    private let nameLabel : UILabel = {
+        let label = UILabel()
+        label.textAlignment = .center
+        label.font = .systemFont(ofSize: 22, weight: .semibold)
+        return label
+    }()
+    
+    // 앨범 설명, 지금은 날짜만
+    private let descriptionLabel : UILabel = {
+        let label = UILabel()
+        label.textColor = .secondaryLabel
+        label.numberOfLines = 0
+        label.font = .systemFont(ofSize: 18, weight: .regular)
+        return label
+    }()
+    
+    // 앨범 주인
+    private let ownerLabel : UILabel = {
+        let label = UILabel()
+        label.textColor = .secondaryLabel
+        label.font = .systemFont(ofSize: 18, weight: .light)
+        return label
+    }()
+    
+    // 전체 재생 버튼
     private let playAllButton: UIButton = {
        let button = UIButton()
         button.backgroundColor = .systemGreen
@@ -59,6 +64,7 @@ final class PlaylistHeaderCollectionReusableView: UICollectionReusableView {
         return button
     }()
     
+    // 초기화 및 각 뷰 세팅
     override init(frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = .systemBackground
@@ -74,6 +80,8 @@ final class PlaylistHeaderCollectionReusableView: UICollectionReusableView {
         fatalError("init(coder:) has not been implemented")
     }
     
+    
+    // 각 뷰 레이아웃 설정
     override func layoutSubviews() {
         super.layoutSubviews()
         let imageSize: CGFloat = height/1.8
@@ -85,15 +93,17 @@ final class PlaylistHeaderCollectionReusableView: UICollectionReusableView {
         
     }
     
+    // 전체 재생 버튼이 클릭 되었을 때,
+    // delegate 되있는 AlbumViewController, PlaylistViewController에서 음악 재생 화면 띄움
     @objc private func didTapPlayAll(){
         delegate?.PlaylistHeaderCollectionReusableViewDidTapPlayAll(self)
     }
+    
     
     func configure(viewModel: PlaylistHeaderViewModel){
         guard let owner = viewModel.ownerName else {
             return
         }
-        
         nameLabel.text = viewModel.name
         descriptionLabel.text = viewModel.description
         ownerLabel.text = "by \(owner)"

@@ -10,6 +10,7 @@ import UIKit
 class TitleHeaderCollectionReusableView: UICollectionReusableView {
     static let identifier = "TitleHeaderCollectionReusableView"
     
+    // 최신 음악, 추천 플레이리스트, 추천 트랙이 적힐 섹션해더의 라벨 설정
     private let label: UILabel = {
         let label = UILabel()
         label.textColor = .label

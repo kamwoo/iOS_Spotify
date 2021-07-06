@@ -11,6 +11,7 @@ import SDWebImage
 class CategoryCollectionViewCell: UICollectionViewCell {
     static let identifier  = "CategoryCollectionViewCell"
     
+    // 셀에 들어갈 카테고리 아이콘
     private let imageView : UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
@@ -20,6 +21,7 @@ class CategoryCollectionViewCell: UICollectionViewCell {
         return imageView
     }()
     
+    // 카테고리 이름
     private let lable: UILabel = {
         let label = UILabel()
         label.textColor = .white
@@ -39,6 +41,7 @@ class CategoryCollectionViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    // 재사용할 셀 기본설정
     override func prepareForReuse() {
         super.prepareForReuse()
         lable.text = nil
@@ -59,6 +62,7 @@ class CategoryCollectionViewCell: UICollectionViewCell {
                                  height: contentView.height/2)
     }
     
+    // search ViewContoroller에서 받은 뷰 모델 데이터
     func configure(with viewModel: CategoryCollectionViewCellViewModel ){
         lable.text = viewModel.title
         imageView.sd_setImage(with: viewModel.artWorkURL, completed: nil)

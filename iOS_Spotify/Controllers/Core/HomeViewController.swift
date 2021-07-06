@@ -7,11 +7,12 @@
 
 import UIKit
 
+// 메인 layout에 설정할 section별 데이터 구분
 enum BrowseSectionType {
     case newReleases(viewModels: [NewReleasesCellViewModel])
     case featuredPlaylists(viewModels: [FeaturedPlaylistCellViewModel])
     case recommendedTracks(viewModels: [RecommendedTrackCellViewModel])
-    
+    // 각 섹션에 헤더로 보여질 제목
     var title: String{
         switch self {
         case .newReleases:
@@ -30,6 +31,7 @@ class HomeViewController: UIViewController {
     private var playlists: [playlist] = []
     private var tracks: [AudioTrack] = []
     
+    // 메인 뷰에서 new album, playlist, track  layout
     private var collectionView : UICollectionView = UICollectionView(
         frame: .zero,
         collectionViewLayout: UICollectionViewCompositionalLayout{ sectionIndex, _ -> NSCollectionLayoutSection? in
@@ -37,6 +39,7 @@ class HomeViewController: UIViewController {
         }
     )
     
+    // 로딩
     private let spinner: UIActivityIndicatorView = {
        let spinner = UIActivityIndicatorView()
         spinner.tintColor = .label
@@ -44,8 +47,10 @@ class HomeViewController: UIViewController {
         return spinner
     }()
     
+    // newalbum, playlist, track 뷰 모델 리스트의 리스트
     private var sections = [BrowseSectionType]()
 
+    // 설정 버튼, 레이아웃, 데이터 쿼리
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
@@ -58,6 +63,7 @@ class HomeViewController: UIViewController {
         configureCollectionView()
         fetchData()
     }
+    
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
@@ -82,7 +88,9 @@ class HomeViewController: UIViewController {
         collectionView.dataSource = self
     }
     
+    // new album, playlist, track 레이아웃 설정
     private static func createSectionLayout(section: Int) -> NSCollectionLayoutSection{
+        // 각 섹션의 헤더
         let supplementaryViews = [
             NSCollectionLayoutBoundarySupplementaryItem(
                 layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
@@ -94,6 +102,7 @@ class HomeViewController: UIViewController {
         ]
         
         switch section {
+        // 첫 번째 섹션
         case 0:
             // item
             let item = NSCollectionLayoutItem(
@@ -101,14 +110,14 @@ class HomeViewController: UIViewController {
                 )
             )
             item.contentInsets = NSDirectionalEdgeInsets(top: 2, leading: 2, bottom: 2, trailing: 2)
-            // vertical group in horizontal
+            // vertical group in horizontal, 세로로 3줄
             let verticalGroup = NSCollectionLayoutGroup.vertical(
                 layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(390)
                 ),
                 subitem: item,
                 count: 3
             )
-            
+            // 가로로 1줄
             let horizontalGroup = NSCollectionLayoutGroup.horizontal(
                 layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(390)
                 ),
@@ -117,7 +126,9 @@ class HomeViewController: UIViewController {
             )
             // section
             let section = NSCollectionLayoutSection(group: horizontalGroup)
+            // 섹션에서 페이지 넘기는 방식
             section.orthogonalScrollingBehavior = .groupPaging
+            // 섹션의 헤더 설정
             section.boundarySupplementaryItems = supplementaryViews
             return section
         
@@ -192,17 +203,23 @@ class HomeViewController: UIViewController {
     
     // api호출
     private func fetchData(){
+        // api호출 그룹
         let group = DispatchGroup()
         group.enter()
         group.enter()
         group.enter()
         
+        // 최신앨범 리턴해서 받은 데이터
         var newReleases: NewReleasesResponse?
+        // 추천 플레이리스트
         var featurePlaylists: FeaturedPlaylistsResponse?
+        // 추천 트랙
         var recommendations: RecommendationsResponse?
         
+        // 최신앨범 request
         APICaller.shared.getNewRelease{ result in
             defer {
+                // 리턴 받은 다음 그룹에서 탈퇴
                 group.leave()
             }
             switch result{
@@ -225,6 +242,7 @@ class HomeViewController: UIViewController {
             }
         }
         
+        // 추천 받을 수 있는 장르들을 리턴 받은 뒤
         APICaller.shared.getRecommendedGenres{ result in
             switch result{
             case .success(let model):
@@ -235,6 +253,7 @@ class HomeViewController: UIViewController {
                         seeds.insert(random)
                     }
                 }
+                // 장르들로 추천 트랙 request
                 APICaller.shared.getRecommendations(genres: seeds){ recommendedResult in
                     defer {
                         group.leave()
@@ -264,12 +283,13 @@ class HomeViewController: UIViewController {
     }
     
     
+    // 리턴 받은 데이터들로 설정시작
     private func configureModels(newAlbums: [Album], playlists: [playlist], tracks: [AudioTrack]){
         self.newAlbums = newAlbums
         self.playlists = playlists
         self.tracks = tracks
         
-        // configure Model
+        // 최신 앨범 데이터 뷰 모델 리스트로 sections에 추가
         sections.append(.newReleases(viewModels: newAlbums.compactMap({
                 return NewReleasesCellViewModel(
                     name: $0.name,
@@ -278,6 +298,8 @@ class HomeViewController: UIViewController {
                     artistName: $0.artists.first?.name ?? "")
             })
         ))
+        
+        // 추천 플레이리스트 데이터 뷰 모델 리스트로 sections에 추가
         sections.append(.featuredPlaylists(viewModels: playlists.compactMap({
             return FeaturedPlaylistCellViewModel(
                 name: $0.name,
@@ -285,13 +307,17 @@ class HomeViewController: UIViewController {
                 creatorName: $0.owner.display_name)
             })
         ))
+        
+        // // 최신 트랙 데이터 뷰 모델 리스트로 sections에 추가
         sections.append(.recommendedTracks(viewModels: tracks.compactMap({
             return RecommendedTrackCellViewModel(
                 name: $0.name,
                 artistName: $0.artists.first?.name ?? "",
-                artworkURL: URL(string: $0.album.images.first?.url ?? ""))
+                artworkURL: URL(string: $0.album?.images.first?.url ?? ""))
             })
         ))
+        
+        // 메인화면 업데이트
         collectionView.reloadData()
     }
     
@@ -309,6 +335,7 @@ class HomeViewController: UIViewController {
 // 홈 뷰 테이블
 extension HomeViewController : UICollectionViewDelegate, UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        // 각 섹션에 들어간 newAlbum, playlist, track 수에 맞게 섹션 별 셀 개수 설정
         let type = sections[section]
         switch type{
         case .newReleases(let viewModels):
@@ -321,25 +348,29 @@ extension HomeViewController : UICollectionViewDelegate, UICollectionViewDataSou
     }
     
     func numberOfSections(in collectionView: UICollectionView) -> Int {
+        // new album, playlist, track 섹션
         return sections.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        
+        // 각 섹션 당
         let type = sections[indexPath.section]
         
         switch type{
+        // newalbum일 경우
         case .newReleases(let viewModels):
             guard let cell = collectionView.dequeueReusableCell(
                     withReuseIdentifier: NewReleaseCollectionViewCell.identifier,
                     for: indexPath) as? NewReleaseCollectionViewCell else {
                 return UICollectionViewCell()
             }
+            // 각 셀을 newalbum 리스트에 순서대로 설정
             let viewModel = viewModels[indexPath.row]
             cell.configure(with: viewModel)
             return cell
             
         case .featuredPlaylists(let viewModels):
+            // 추천 플레이리스트일 경우, 리스트에 있는 것들을 순서대로 셀로 설정
             guard let cell = collectionView.dequeueReusableCell(
                     withReuseIdentifier: FeaturedPlaylistCollectionViewCell.identifier,
                     for: indexPath) as? FeaturedPlaylistCollectionViewCell else {
@@ -350,6 +381,7 @@ extension HomeViewController : UICollectionViewDelegate, UICollectionViewDataSou
             return cell
             
         case .recommendedTracks(let viewModels):
+            // 추천 트랙일 경우,  리스트에 있는 것들을 순서대로 셀로 설정
             guard let cell = collectionView.dequeueReusableCell(
                     withReuseIdentifier: RecommendedTrackCollectionViewCell.identifier,
                     for: indexPath) as? RecommendedTrackCollectionViewCell else {
@@ -360,28 +392,42 @@ extension HomeViewController : UICollectionViewDelegate, UICollectionViewDataSou
         }
     }
     
+    // 셀이 클릭 되었을 때
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
+        // 클릭된 섹션에서
         let section = sections[indexPath.section]
         switch section {
+            // 플레이 리스트 섹션에서
         case .featuredPlaylists:
+            // 해당하는 순서의 셀
             let playlist = playlists[indexPath.row]
+            // PlaylistViewController로 전환
             let vc = PlaylistViewController(playlist: playlist)
             vc.title = playlist.name
             vc.navigationItem.largeTitleDisplayMode = .never
             navigationController?.pushViewController(vc, animated: true)
+            
+            // 최신 앨범 섹션에서
         case .newReleases:
+            // 최신 앨범 리스트에 해당하는 순서의 셀
             let album = newAlbums[indexPath.row]
+            // 앨범 뷰로 전환
             let vc = AlbumViewController(album: album)
             vc.title = album.name
             vc.navigationItem.largeTitleDisplayMode = .never
             navigationController?.pushViewController(vc, animated: true)
+            
+            // 추천 트랙에서
         case .recommendedTracks:
+            // 추천 트랙 리스트에 해당하는 순서의 셀
             let track = tracks[indexPath.row]
-            PlaybackPresenter.startPlayback(from: self, track: track)
+            // 음악 재생 뷰로 전환
+            PlaybackPresenter.shared.startPlayback(from: self, track: track)
         }
     }
     
+    // 각 섹션의 헤더
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         guard let header = collectionView.dequeueReusableSupplementaryView(
                 ofKind: kind,
@@ -391,6 +437,7 @@ extension HomeViewController : UICollectionViewDelegate, UICollectionViewDataSou
         else {
             return UICollectionReusableView()
         }
+        // 해당하는 섹션에서
         let section = indexPath.section
         let title = sections[section].title
         header.cofigure(with: title)

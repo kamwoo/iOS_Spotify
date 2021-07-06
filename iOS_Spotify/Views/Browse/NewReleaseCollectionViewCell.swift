@@ -8,9 +8,11 @@
 import UIKit
 import SDWebImage
 
+// 홈 뷰에 최신 앨범 셀 뷰
 class NewReleaseCollectionViewCell: UICollectionViewCell {
     static let identifier = "NewReleaseCollectionViewCell"
     
+    // 앨범 타이틀 이미지
     private let albumCoverImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(systemName: "photo")
@@ -18,6 +20,7 @@ class NewReleaseCollectionViewCell: UICollectionViewCell {
         return imageView
     }()
     
+    // 앨범 이미지
     private let albumNameLabel: UILabel = {
         let label = UILabel()
         label.numberOfLines = 0
@@ -25,6 +28,7 @@ class NewReleaseCollectionViewCell: UICollectionViewCell {
         return label
     }()
     
+    // 앨범 곡수
     private let numberOfTracksLabel: UILabel = {
         let label = UILabel()
         label.numberOfLines = 0
@@ -32,6 +36,7 @@ class NewReleaseCollectionViewCell: UICollectionViewCell {
         return label
     }()
     
+    // 아티스트 이름
     private let artistNameLabel: UILabel = {
         let label = UILabel()
         label.numberOfLines = 0
@@ -76,6 +81,7 @@ class NewReleaseCollectionViewCell: UICollectionViewCell {
         
     }
     
+    // 재사용할 셀 기본 설정
     override func prepareForReuse() {
         super.prepareForReuse()
         albumNameLabel.text = nil
@@ -84,6 +90,7 @@ class NewReleaseCollectionViewCell: UICollectionViewCell {
         albumCoverImageView.image = nil
     }
     
+    // 해당하는 앨범의 데이터 받음
     func configure(with viewModel: NewReleasesCellViewModel){
         albumNameLabel.text = viewModel.name
         artistNameLabel.text = viewModel.artistName

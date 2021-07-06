@@ -10,6 +10,7 @@ import UIKit
 class RecommendedTrackCollectionViewCell: UICollectionViewCell {
     static let identifier = "RecommendedTrackCollectionViewCell"
     
+    // 플레이 리스트 셀에 곡 타이틀 이미지
     private let playlistCoverImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.layer.masksToBounds = true
@@ -19,6 +20,7 @@ class RecommendedTrackCollectionViewCell: UICollectionViewCell {
         return imageView
     }()
     
+    // 곡 이름
     private let playlistNameLabel: UILabel = {
         let label = UILabel()
         label.numberOfLines = 0
@@ -26,6 +28,7 @@ class RecommendedTrackCollectionViewCell: UICollectionViewCell {
         return label
     }()
 
+    // 아티스트 이름
     private let artistNameLabel: UILabel = {
         let label = UILabel()
         label.numberOfLines = 0
@@ -46,6 +49,7 @@ class RecommendedTrackCollectionViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    // 셀 layout 설정
     override func layoutSubviews() {
         super.layoutSubviews()
         let imageSize = contentView.height - 4
@@ -60,6 +64,7 @@ class RecommendedTrackCollectionViewCell: UICollectionViewCell {
         
     }
     
+    // 재사용될 셀 설정
     override func prepareForReuse() {
         super.prepareForReuse()
         playlistNameLabel.text = nil
@@ -67,6 +72,7 @@ class RecommendedTrackCollectionViewCell: UICollectionViewCell {
         playlistCoverImageView.image = nil
     }
     
+    // 해당하는 각 곡들의 데이터 모델
     func configure(with viewModel: RecommendedTrackCellViewModel){
         playlistNameLabel.text = viewModel.name
         artistNameLabel.text = viewModel.artistName

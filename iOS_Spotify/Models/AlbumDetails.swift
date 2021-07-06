@@ -20,15 +20,7 @@ struct AlbumDetails: Codable {
 }
 
 struct TrackResponse: Codable {
-    let items: [kamTrack]
+    let items: [AudioTrack]
 }
 
-struct kamTrack: Codable {
-    let artists: [Artist]
-    let available_markets: [String]
-    let external_urls: [String: String]
-    let id: String
-    let name: String
-    let type: String
-    let uri: String
-}
+

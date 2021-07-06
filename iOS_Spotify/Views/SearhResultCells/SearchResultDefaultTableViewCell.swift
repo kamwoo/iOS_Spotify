@@ -9,15 +9,18 @@ import UIKit
 import SDWebImage
 
 
+// 아티스트 섹션에서 보여질 각 셀 뷰
 class SearchResultDefaultTableViewCell: UITableViewCell {
     static let identifier = "SearchResultDefaultTableViewCell"
     
+    // 아티스트 이름
     private let label : UILabel = {
        let label = UILabel()
         label.numberOfLines = 1
         return label
     }()
     
+    // 아티스트 사진
     private let iconImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
@@ -48,12 +51,14 @@ class SearchResultDefaultTableViewCell: UITableViewCell {
                              height: contentView.height)
     }
     
+    // 재사용 될 셀 기본 설정
     override func prepareForReuse() {
         super.prepareForReuse()
         iconImageView.image = nil
         label.text = nil
     }
     
+    // 검색결과 뷰에서 해당하는 아티스트의 데이터 모델 받음
     func configure(with viewModel: SearchResultDefaultTableViewCellViewModel){
         label.text = viewModel.title
         iconImageView.sd_setImage(with: viewModel.imageURL, completed: nil)
