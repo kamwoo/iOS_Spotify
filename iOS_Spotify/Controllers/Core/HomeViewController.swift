@@ -62,6 +62,7 @@ class HomeViewController: UIViewController {
         view.addSubview(spinner)
         configureCollectionView()
         fetchData()
+        addLongTapGesture()
     }
     
     
@@ -86,6 +87,43 @@ class HomeViewController: UIViewController {
                                 withReuseIdentifier: TitleHeaderCollectionReusableView.identifier)
         collectionView.delegate = self
         collectionView.dataSource = self
+    }
+    
+    private func addLongTapGesture() {
+        let gesture = UILongPressGestureRecognizer(target: self, action: #selector(didLongPress(_:)))
+        collectionView.isUserInteractionEnabled = true
+        collectionView.addGestureRecognizer(gesture)
+    }
+    
+    @objc func didLongPress(_ gesture: UILongPressGestureRecognizer) {
+        guard gesture.state == .began else {
+            return
+        }
+        let touchPoint = gesture.location(in: collectionView)
+        guard let indexPath = collectionView.indexPathForItem(at: touchPoint),
+              indexPath.section == 2
+        else {
+            return
+        }
+        
+        let model = tracks[indexPath.row]
+        let actionSheet = UIAlertController(title: model.name,
+                                            message: "플레이리스트에 추가하시겠습니까?",
+                                            preferredStyle: .actionSheet)
+        actionSheet.addAction(UIAlertAction(title: "취소", style: .cancel, handler: nil))
+        actionSheet.addAction(UIAlertAction(title: "추가하기", style: .default, handler: {[weak self] _ in
+            DispatchQueue.main.async {
+                let vc = LibraryPlaylistsViewController()
+                vc.selectionHandler = {playlist in
+                    APICaller.shared.addTrackToPlaylist(track: model, playlist: playlist){ success in
+                        print("success")
+                    }
+                }
+                vc.title = "플레이 리스트 선택"
+                self?.present(UINavigationController(rootViewController: vc), animated: true, completion: nil)
+            }
+        }))
+        present(actionSheet, animated: true, completion: nil)
     }
     
     // new album, playlist, track 레이아웃 설정

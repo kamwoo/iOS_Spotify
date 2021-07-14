@@ -41,6 +41,26 @@ class SettingViewController: UIViewController {
     }
     
     private func SignOutTapped(){
+        let alert = UIAlertController(title: "로그아웃",
+                                      message: "로그아웃 하시겠습니까?",
+                                      preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "취소", style: .cancel, handler: nil))
+        alert.addAction(UIAlertAction(title: "확인", style: .destructive, handler: { _ in
+            AuthManager.shared.signOut{ [weak self] signedOut in
+                if signedOut {
+                    DispatchQueue.main.async {
+                        let navVC = UINavigationController(rootViewController: WelcomeViewController())
+                        navVC.navigationBar.prefersLargeTitles = true
+                        navVC.viewControllers.first?.navigationItem.largeTitleDisplayMode = .always
+                        navVC.modalPresentationStyle = .fullScreen
+                        self?.present(navVC, animated: true){
+                            self?.navigationController?.popToRootViewController(animated: false)
+                        }
+                    }
+                }
+            }
+        }))
+        present(alert, animated: true, completion: nil)
         
     }
 

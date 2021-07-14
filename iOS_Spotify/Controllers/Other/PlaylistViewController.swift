@@ -8,6 +8,8 @@
 import UIKit
 
 class PlaylistViewController: UIViewController {
+    
+    public var isOwner = false
 
     private var playlist: playlist
     
@@ -105,6 +107,46 @@ class PlaylistViewController: UIViewController {
         
         // 우측 상단에 공유 버튼 추가
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(didTapShare))
+        
+        let gesture = UILongPressGestureRecognizer(target: self, action: #selector(didLongPress(_:)))
+        collectionView.addGestureRecognizer(gesture)
+    }
+    
+    @objc func didLongPress(_ gesture: UILongPressGestureRecognizer){
+        guard gesture.state == .began else {
+            return
+        }
+        let touchPoint = gesture.location(in: collectionView)
+        guard let indexPath = collectionView.indexPathForItem(at: touchPoint) else {
+            return
+        }
+        let trackToDelete = tracks[indexPath.row]
+        let actionSheet = UIAlertController(title: trackToDelete.name,
+                                            message: "이 곡을 플레이리스트에서 삭제하시겠습니까?",
+                                            preferredStyle: .actionSheet)
+        
+        actionSheet.addAction(UIAlertAction(title: "취소",
+                                            style: .cancel,
+                                            handler: nil))
+        
+        actionSheet.addAction(
+            UIAlertAction(title: "지우기",
+            style: .destructive,
+            handler: { [weak self] _ in
+                guard let self = self else {return}
+                APICaller.shared.removeTrackFromPlaylist(track: trackToDelete, playlist: self.playlist){ succcess in
+                    DispatchQueue.main.async {
+                        if succcess{
+                            self.tracks.remove(at: indexPath.row)
+                            self.viewModels.remove(at: indexPath.row)
+                            self.collectionView.reloadData()
+                        }else{
+                            print("failed to remove")
+                        }
+                    }
+                }
+            }))
+        present(actionSheet, animated: true, completion: nil)
     }
     
     // 공유 버튼 액션

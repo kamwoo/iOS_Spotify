@@ -72,11 +72,11 @@ class PlayerViewController: UIViewController {
     }
     
     @objc func didTapClose(){
-        
+        dismiss(animated: true, completion: nil)
     }
     
     @objc func didTapAction(){
-        
+
     }
     
     func refreshUI(){

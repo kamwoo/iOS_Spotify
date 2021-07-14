@@ -81,6 +81,31 @@ class AlbumViewController: UIViewController {
         collectionView.delegate = self
         collectionView.dataSource = self
         
+        fetchData()
+        
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .action,
+                                                            target: self,
+                                                            action: #selector(didTapActions))
+        
+    }
+    
+    @objc func didTapActions() {
+        let actionSheet = UIAlertController(title: album.name,
+                                            message: "앨벙을 저장하시겠습니까?",
+                                            preferredStyle: .actionSheet)
+        actionSheet.addAction(UIAlertAction(title: "취소", style: .cancel, handler: nil))
+        actionSheet.addAction(UIAlertAction(title: "앨범 저장", style: .default, handler: { [weak self] _ in
+            guard let self = self else {return}
+            APICaller.shared.saveAlbum(album: self.album){ success in
+                if success{
+                    NotificationCenter.default.post(name: .albumSavedNotification, object: nil)
+                }
+            }
+        }))
+        present(actionSheet, animated: true, completion: nil)
+    }
+    
+    private func fetchData(){
         // 홈 뷰에서 선택된 해당하는 곡 모델로 세부정보 request
         APICaller.shared.getAlbumDetails(for: album){ [weak self] result in
             DispatchQueue.main.async {
@@ -99,7 +124,6 @@ class AlbumViewController: UIViewController {
                 }
             }
         }
-        
     }
 
     override func viewDidLayoutSubviews() {
