@@ -14,10 +14,10 @@ Swift로 작성된 Spofity Api를 이용한 음악 스트리밍 앱으로 스포
 
 ---
 ### 개발
-Swift 바닐라 코드로 작성했고, UI도 코드로 작성했습니다. 
-Firebase
-Mvvm
-바닐라
+Swift 바닐라 코드로 작성  
+Firebase 사용자의 이메일, 비밀번호, 개인정보, 플레이리스트 저장  
+Mvvm Table 또는 Collection ViewCell에서 발생한 이벤트를 protocol Delegate를 사용하여 ViewContoroller에서 이벤트 처리  
+OAuth 앱이 실행되고 WelocomeViewController로 처음 Scene으로 나타나면서 로그인 캐시확인 및 Spoify로그인을 통해 사용자 토큰 처리
 
 ---
 ### 사용 화면
